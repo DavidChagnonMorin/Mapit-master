@@ -8,8 +8,8 @@ public class Profiles {
     public Image profilePicture;
     public Profiles[] friends;
     public Photos[] photos;
-    public Groups[] actualGroups;
-    public Groups[] groupsHistory;
+   // public Groups[] actualGroups;
+   // public Groups[] groupsHistory;
 
 
     public Profiles(String userName, Image profilePicture) {
