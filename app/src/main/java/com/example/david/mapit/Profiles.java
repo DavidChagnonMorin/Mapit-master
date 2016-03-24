@@ -19,15 +19,9 @@ public class Profiles {
     public String getUserName(){
         return this.userName;
     }
-    public Image getProfilePicture(){
-        return this.profilePicture;
-    }
-    public void setUserName(String newUserName) {
-        this.userName = newUserName;
-    }
-    public void setProfilePicture(Image newProfilePicture){
-        this.profilePicture = newProfilePicture;
-    }
+    public Image getProfilePicture(){return this.profilePicture;}
+    public void setUserName(String newUserName) {this.userName = newUserName;}
+    public void setProfilePicture(Image newProfilePicture){this.profilePicture = newProfilePicture;}
 
     }
 
