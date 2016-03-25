@@ -2,7 +2,7 @@ package com.example.david.mapit;
 import android.media.Image;
 
 /**
- * Created by David on 22/03/2016.
+ * sCreated by David on 22/03/2016.
  */
 public class Photos {
     Image Photo;
