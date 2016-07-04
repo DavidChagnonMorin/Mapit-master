@@ -83,11 +83,4 @@
         android:layout_below="@+id/confirmedpasswordbox"
         android:layout_centerHorizontal="true" />
 
-    <ImageButton
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:id="@+id/profileimagebutton"
-        android:layout_alignTop="@+id/usernamebox"
-        android:layout_toEndOf="@+id/suscribebutton" />
-
 </RelativeLayout>

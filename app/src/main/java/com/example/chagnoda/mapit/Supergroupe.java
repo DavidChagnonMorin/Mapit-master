@@ -17,8 +17,8 @@ public class Supergroupe extends Groupe {
 
     public Supergroupe(String name , int size , int color , double latitude ,double longitude, String creator, ArrayList<String> members, ArrayList<Discussion> discussions,Date timeoflastmessage){
 
-        super(name ,size ,color ,  latitude , longitude ,creator,members,discussions,timeoflastmessage);
-        Groupe general = new Groupe("general",50, Color.GREEN, latitude , longitude,creator,members,discussions,timeoflastmessage);
+        super(name ,size ,color ,  latitude , longitude ,creator,discussions,timeoflastmessage);
+        Groupe general = new Groupe("general",50, Color.GREEN, latitude , longitude,creator,discussions,timeoflastmessage);
         this.channels.add(this);
     }
 

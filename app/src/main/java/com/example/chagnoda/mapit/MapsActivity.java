@@ -1,21 +1,27 @@
 package com.example.chagnoda.mapit;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
-
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.firebase.client.collection.LLRBNode;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -31,6 +37,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
     }
 
 
@@ -46,19 +53,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit/Groups");
+        final Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit/Groups");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()){
-                    Log.d("My App: ", "1");
-                    Log.d("My App: ", groupSnapshot.toString());
+                for (final DataSnapshot groupSnapshot : dataSnapshot.getChildren()){
                     double latitude = (double)groupSnapshot.child("groupeLatitude").getValue();
                     double longitude = (double)groupSnapshot.child("groupeLongitude").getValue();
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)));
+                    String color = groupSnapshot.child("groupeColor").getValue().toString();
+                    int c = Integer.parseInt(color);
+
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title("Group: " + groupSnapshot.child("groupeName").getValue().toString())
+                            .snippet("Paticipants: " + groupSnapshot.child("groupeSize").getValue().toString()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+
+
                     CircleOptions circleOptions = new CircleOptions()
                             .center(new LatLng(latitude, longitude))
-                            .radius(10000).fillColor(Color.BLUE).strokeColor(Color.BLUE);
+                            .radius(500).fillColor(c).strokeColor(c);
                     Circle circle = mMap.addCircle(circleOptions);
                 }
             }
@@ -68,8 +80,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+        mMap.setOnInfoWindowClickListener(new OnInfoWindowClickListener() {
 
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                final Marker m = marker;
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (final DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
+                            if(m.getTitle().equals("Group: " + groupSnapshot.child("groupeName").getValue().toString())){
+                                SharedPreferences groupActuel = getSharedPreferences("groupeActuel", 0);
+                                SharedPreferences.Editor editor = groupActuel.edit();
+                                editor.putString("nomgroupeactuel",groupSnapshot.child("groupeName").getValue().toString());
+                                editor.commit();
+                                startActivity(new Intent("com.example.chagnoda.mapit.ChatActivity"));
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+
+                    }
+                });
+
+
+            }
+        });
 
 
     }
+
 }

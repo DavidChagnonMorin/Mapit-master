@@ -6,16 +6,17 @@ import java.util.Date;
  * Created by chengli on 2016-03-23.
  */
 public class Discussion {
-
+    private boolean left;
     private Object content;
 
     private Date timesend;
 
     private String sender;
 
-    public Discussion(){}
 
-    public Discussion(String sender , Object content , Date time){
+    public Discussion(boolean left, String sender , Object content , Date time){
+
+        this.left = left;
 
         this.sender = sender;
 
@@ -36,5 +37,5 @@ public class Discussion {
         return this.sender;
     }
 
-
+    public boolean getLeft(){return this.left;}
 }

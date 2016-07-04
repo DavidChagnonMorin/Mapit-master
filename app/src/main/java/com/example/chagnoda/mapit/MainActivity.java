@@ -9,6 +9,7 @@ import com.google.android.gms.location.LocationListener;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -40,11 +41,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-
+/******IMPORTANT******
+* Le projet n'est par terminé donc utiliser cet acompte pour vous connecter
+ * user login: david@gmail.com
+ * password: 1
+ *
+* */
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
     View mapit_button;
-    final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
     MyLocationListener locationListener = new MyLocationListener();
     LocationManager locationManager;
 
@@ -53,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         Firebase.setAndroidContext(this);
         setContentView(R.layout.activity_main);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mapit_button = findViewById(R.id.mapitbutton);
@@ -65,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        Toast.makeText(getApplicationContext(), "Press the Mapit button to create a new group or join one near you! ", Toast.LENGTH_LONG).show();
 
     }
 
@@ -118,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             final Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit");
             ref.unauth();
             Toast.makeText(getApplicationContext(), "You have logged out ", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent("com.example.chagnoda.mapit.LoginActivity"));
+            startActivity(new Intent("com.example.chagnoda.mapit.NotConnectedActivity"));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -129,129 +134,96 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onClick(View v) {
-        Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit/Profiles");
-        final AuthData authData = ref.getAuth();
-        Log.d("My App: ", "1");
         findAllGroupeAroundMe();
-        Log.d("My App: ", "2");
 
-
-        ref.addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                for (DataSnapshot profileSnapshot : snapshot.getChildren()) {
-                    if (profileSnapshot.child("userID").getValue().toString().equals(authData.getUid().toString())) {
-                        String username = profileSnapshot.child("userName").getValue().toString();
-                        String email = profileSnapshot.child("email").getValue().toString();
-                        String password = profileSnapshot.child("password").getValue().toString();
-                        String userID = profileSnapshot.child("userID").getValue().toString();
-                        Log.d("My App: ", "5");
-                        HashMap<String, String> friendlist = new HashMap<String, String>();
-                        for (DataSnapshot friendlistSnapshot : profileSnapshot.child("friendsList").getChildren()) {
-                            Log.d("My App: ", friendlistSnapshot.getKey().toString()+" , "+ friendlistSnapshot.getValue().toString());
-                            friendlist.put(friendlistSnapshot.getKey().toString(), friendlistSnapshot.getValue().toString());
-                        }
-                        Log.d("My App: ", "6");
-                        Profile copy_profile = new Profile(username, email, password, userID, friendlist);
-                        Log.d("My App: ", "7");
-                        createGroup(copy_profile);
-                    } else {
-                        Log.d("My App:", "User Not in the data base can't find profile to use it");
-                    }
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.d("My App:", firebaseError.toString());
-            }
-
-
-        });
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_ASK_PERMISSIONS:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    GPSupdates();
-                } else {
-                    // Permission Denied
-                    Toast.makeText(MainActivity.this, "GPS_PERMISSION Denied", Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
 
+    // impossible de faire la permission pour les version precedent api 23
     public Location GPSupdates() {//changer type de retour a location pour l'utilise dans la methode create groupe
-        int hasWriteContactsPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (hasWriteContactsPermission != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+        int REQUEST_CODE_ASK_PERMISSIONS = 123;
+        int hasLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+        if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                     REQUEST_CODE_ASK_PERMISSIONS);
-            return null;
-        }
-        // LocationManager service de geolocalisation
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-        // Recupere les coordonnees dans location, location.getLatitude() et location.getLongitude()
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        // Log.d sert a afficher dans le logcat, si on cherche My App dans la saisi de recherche en bas, on voit le message.(pour voir les coordonnees appuyer sur le bouton mapit(onClick()))
-        Log.d("My App:", "latitude: " + location.getLatitude() + "longitude: " + location.getLongitude());
-        return location;
-        // locationManager.removeUpdates(locationListener);
 
+        }
+        else {
+            // LocationManager service de geolocalisation
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            // Recupere les coordonnees dans location, location.getLatitude() et location.getLongitude()
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            return location;
+            // locationManager.removeUpdates(locationListener);
+        }
+        return null;
     }
 
+    /*
+    distance = R*acos(cos(a)*cos(b)*cos(c-d)+sin(a)*sin(b))
+    avec R le rayon de la terre (en metre pour obtenir un résultat en metre)
+    a = latitude du point A (en radians)
+    b = latitude du point B (en radians)
+    c = longitude du point A (en radians)
+    d = longitude du point B (en radians)
+    */
+    public double distWithCoord(double a, double b, double c, double d){
+        //R: rayon de la terre
+        double R = 6378137;
+        return R*Math.acos(Math.cos(a)*Math.cos(b)*Math.cos(c-d)+Math.sin(a)*Math.sin(b));
+    }
+    //6378137*acos(cos(45.50930521)*cos(45.50932363)*cos(-73.40194585+73.40178653)+sin(45.50930521)*sin(45.50932363))
     public void findAllGroupeAroundMe(){
-        GeoLocation mylocation = new GeoLocation(GPSupdates().getLatitude(),GPSupdates().getLongitude());
-        Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit");
-        boolean groupfound;
-        GeoFire gf = new GeoFire(ref);
-        //Query autour de 'mylocation' avec un rayon de 0.5 kilometers
-        GeoQuery geoQuery = gf.queryAtLocation(mylocation,0.5);
-        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+        try {
+            Location mylocation = GPSupdates();
 
-            public void onDataChange(String key) {
-                if(key != null){
+            //GeoLocation location = new GeoLocation(GPSupdates().getLatitude(),GPSupdates().getLongitude());
+            final double myLatitude = mylocation.getLatitude();
+            final double myLongitude = mylocation.getLongitude();
+            Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit/Groups");
+            ref.addListenerForSingleValueEvent(new ValueEventListener() {
 
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    boolean groupcreated = false;
+                    if(dataSnapshot.getValue() == null){
+                        // aucun groupe dans le data base
+                        Log.d("My app: ","aucun groupe dans la base de donnee , cree un nouveau");
+                        startActivity(new Intent("com.example.chagnoda.mapit.CreateGroupActivity"));
+                    }
+                    for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
+                        double groupLatitude = (double)groupSnapshot.child("groupeLatitude").getValue();
+                        double groupLongitude = (double) groupSnapshot.child("groupeLongitude").getValue();
+                        Log.d("My app: ","dist "+ Double.toString(distWithCoord(myLatitude, groupLatitude, myLongitude, groupLongitude)));
+                        if (distWithCoord(myLatitude, groupLatitude, myLongitude, groupLongitude) <= 600) {
+                            //group exist in zone of scan, join this one
+                            Log.d("My app: ", "groupe a promximite");
+                            groupcreated = true;
+                            SharedPreferences groupActuel = getSharedPreferences("groupeActuel", 0);
+                            SharedPreferences.Editor editor = groupActuel.edit();
+                            editor.putString("nomgroupeactuel",groupSnapshot.child("groupeName").getValue().toString());
+                            editor.commit();
+                            startActivity(new Intent("com.example.chagnoda.mapit.ChatActivity"));
+                            break;
+                        }
+
+                    }
+                    if(groupcreated == false) {
+                        Log.d("My app: ", "groupe cree");
+                        startActivity(new Intent("com.example.chagnoda.mapit.CreateGroupActivity"));
+                    }
                 }
 
-            }
-
-            @Override
-            public void onKeyEntered(String key, GeoLocation location) {
-
-            }
-
-            @Override
-            public void onKeyExited(String key) {
-
-            }
-
-            @Override
-            public void onKeyMoved(String key, GeoLocation location) {
-
-            }
-
-            @Override
-            public void onGeoQueryReady() {
-
-            }
-
-            @Override
-            public void onGeoQueryError(FirebaseError error) {
-
-            }
-        });
-        geoQuery.removeAllListeners();
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+                }
+            });
+        }
+        catch (Exception exc){
+            Toast.makeText(getApplicationContext(), "You have to activate the Location functionality of your system", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -294,36 +266,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // On doit metter a jour la location avec GeoFire chaque fois un groupe est cree
     //Geofire est une base de donnee independant (comme la base qui gere le login)
 
-    public void createGroup (Profile creator){
-        Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit");
-        AuthData authData = ref.getAuth();
-        Location location = GPSupdates();//acquérir location quand on cree un groupe
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        ArrayList<String> members = new ArrayList<String>();
-        members.add(creator.getUserName());
-        String s = "welcome to the groupe : "+"NEW GROUPE"+" , the creator of groupe is : ";
-        ArrayList<Discussion> discussions = new ArrayList<Discussion>();
-        Discussion firstMessage = new Discussion(creator.getUserName() , s, Calendar.getInstance().getTime());
-        discussions.add(firstMessage);
-        Date timeoflastmessage = discussions.get(discussions.size()-1).getTimeSend();
-        Groupe new_group = new Groupe("groupName",1,0,latitude,longitude,creator.getUserName(),members,discussions,timeoflastmessage);//utilise cette location pour creer le groupe
-        ref.child("Groups").child(new_group.getGroupeName()).setValue(new_group);//enregister dans la base
-        GeoFire gf = new GeoFire(ref); //creation de geofire qui est la base de location
-    /*
-        gf.setLocation(new_group.getGroupeName() , new GeoLocation(location.getLatitude() , location.getLongitude()) , new GeoFire.CompletionListener() {
-            @Override
-            public void onComplete(String key, FirebaseError error) {
-                if (error != null) {
-                    Toast.makeText(getApplicationContext(), "An error occur, the group has not been created", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "A Group as been successfully created! ", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });;//enregister la location dans geofire , la cle est nom de groupe(optional)
-
-    */
-    }
 
 
 

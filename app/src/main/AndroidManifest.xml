@@ -88,6 +88,31 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.chagnoda.mapit.NotConnectedActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".CreateGroupActivity">
+            <intent-filter>
+                <action android:name="com.example.chagnoda.mapit.CreateGroupActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ChatActivity">
+            <intent-filter>
+                <action android:name="com.example.chagnoda.mapit.ChatActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".EventListActivity">
+            <intent-filter>
+                <action android:name="com.example.chagnoda.mapit.EventListActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
     </application>

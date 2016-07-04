@@ -1,17 +1,12 @@
 package com.example.chagnoda.mapit;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.net.Uri;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,13 +14,8 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 
-import org.w3c.dom.Text;
-
 import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.firebase.client.ValueEventListener;
 
 /**
  * Created by chengli on 2016-03-21.
@@ -57,7 +47,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
 
-        username_view = (TextView)findViewById(R.id.loginname);
+        username_view = (TextView)findViewById(R.id.groupname);
         final String username = username_view.getText().toString();
         password_view = (TextView)findViewById(R.id.loginpassword);
         final String password = password_view.getText().toString();
@@ -68,8 +58,36 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 new Firebase.AuthResultHandler() {
                     @Override
 
-                    public void onAuthenticated(AuthData authData) {
+                    public void onAuthenticated(final AuthData authData) {
                         Toast.makeText(getApplicationContext(), "You have logged in ", Toast.LENGTH_SHORT).show();
+                        ref.child("Profiles").addListenerForSingleValueEvent(new ValueEventListener() {
+
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                for (DataSnapshot profile : dataSnapshot.getChildren()) {
+                                    if(profile.child("email").getValue().toString().equals(username)){
+                                        ref.child("Profiles").child(profile.child("userName").getValue().toString()).child("userID").setValue(authData.getUid());
+                                        SharedPreferences userInfo = getSharedPreferences("userInfo", 0);
+                                        SharedPreferences.Editor editor = userInfo.edit();
+                                        editor.putString("username", profile.child("userName").getValue().toString());
+                                        editor.putString("email",username);
+                                        editor.putString("password",password);
+                                        editor.commit();
+                                        Log.d("Login: ",profile.child("userName").getValue().toString()+" "+username+" "+ password);
+
+                                    }
+
+                                }
+
+                            }
+
+
+                            @Override
+                            public void onCancelled(FirebaseError firebaseError) {
+
+                            }
+                        });
                         startActivity(new Intent("com.example.chagnoda.mapit.MainActivity"));
                     }
 

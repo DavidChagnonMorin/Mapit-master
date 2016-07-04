@@ -46,48 +46,11 @@ public class SuscribeActivity extends AppCompatActivity implements View.OnClickL
         setContentView(R.layout.activity_suscribe);
         suscribe = (Button)findViewById(R.id.suscribebutton);
         suscribe.setOnClickListener(this);
-        imagePick = (ImageButton)findViewById(R.id.profileimagebutton);
-        imagePick.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, SELECT_PHOTO);
-            }
-        });
 
 
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Here we need to check if the activity that was triggers was the Image Gallery.
-        // If it is the requestCode will match the LOAD_IMAGE_RESULTS value.
-        // If the resultCode is RESULT_OK and there is some data we know that an image was picked.
-        if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK && data != null) {
-            // Let's read picked image data - its URI
-            Uri pickedImage = data.getData();
-            // Let's read picked image path using content resolver
-            String[] filePath = { MediaStore.Images.Media.DATA };
-            Cursor cursor = getContentResolver().query(pickedImage, filePath, null, null, null);
-            cursor.moveToFirst();
-            String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-            imagePick.setImageBitmap(bitmap);
-
-            // Do something with the bitmap
-
-
-            // At the end remember to close the cursor or you will end with the RuntimeException!
-            cursor.close();
-        }
-    }
 
     @Override
     public void onClick(View v) {
@@ -100,7 +63,7 @@ public class SuscribeActivity extends AppCompatActivity implements View.OnClickL
         final String password = password_view.getText().toString();
         confirmed_password_view = (TextView)findViewById(R.id.confirmedpasswordbox);
         String confirmed_password = confirmed_password_view.getText().toString();
-        profilepicture_view = (ImageButton) findViewById(R.id.profileimagebutton);
+
 
         final Firebase ref = new Firebase("https://sizzling-inferno-6141.firebaseio.com/Mapit");
         ref.createUser(email, password, new Firebase.ResultHandler() {
@@ -108,12 +71,9 @@ public class SuscribeActivity extends AppCompatActivity implements View.OnClickL
             @Override
             public void onSuccess() {
                 Toast.makeText(getApplicationContext(), " Your account has been created!", Toast.LENGTH_SHORT).show();
-                AuthData authData = ref.getAuth();
-                HashMap<String,String> friendlist = new HashMap<String,String>();
-                friendlist.put("None","None");
-                Profile new_user = new Profile(username,email, password,authData.getUid(),friendlist);
+                Profile new_user = new Profile(username,email, password);
                 ref.child("Profiles").child(username).setValue(new_user);
-                startActivity(new Intent("com.example.chagnoda.mapit.MainActivity"));
+                startActivity(new Intent("com.example.chagnoda.mapit.LoginActivity"));
 
             }
             @Override

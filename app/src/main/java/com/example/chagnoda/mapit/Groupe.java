@@ -31,7 +31,7 @@ public class Groupe {
 
     public Groupe(){}
 
-    public Groupe(String name , int size , int color , double latitude ,double longitude, String creator, ArrayList<String> members, ArrayList<Discussion> discussions,Date timeoflastmessage){
+    public Groupe(String name , int size , int color , double latitude ,double longitude, String creator, ArrayList<Discussion> discussions,Date timeoflastmessage){
 
         this.groupename = name;
         this.groupesize=size;
@@ -39,7 +39,6 @@ public class Groupe {
         this.latitude=latitude;
         this.longitude=longitude;
         this.creator=creator;
-        this.members = members;
         this.discussions = discussions;
         this.timeoflastmessage = timeoflastmessage;
 
@@ -81,14 +80,6 @@ public class Groupe {
         this.discussions.add(d);
     }
 
-    public void addMemberToGroupe(String p){
-        this.members.add(p);
-    }
-
-    public void removeMemberFromGroupe(Profile p){
-        if(this.members.contains(p)){
-            this.members.remove(p);}
-    }
 
     public void extendGroupeSize(int newsize){
         this.groupesize+=newsize;
